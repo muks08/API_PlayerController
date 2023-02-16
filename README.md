@@ -58,11 +58,8 @@ Required fields:
 Role model:
 
 supervisor:
-
-				- can perform any operations in the system except for deleting users with the supervisor role
+	- can perform any operations in the system except for deleting users with the supervisor role
 admin:
-
-				- can perform any operations with users with the user and admin roles (if it is himself for admin role)
+	- can perform any operations with users with the user and admin roles (if it is himself for admin role)
 user:
-
-				- can perform any operation on its user except delete
+	- can perform any operation on its user except delete
