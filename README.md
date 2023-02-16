@@ -1,6 +1,8 @@
 PlayerController
 
+
 Description:
+
 		1. This application is about creating users and operations with them;
 		
 		2. In the system already created 2 uses with roles: ‘supervisor’ (this user cannot be
@@ -10,12 +12,19 @@ Description:
 		
 		
 Basic application requirements:
+
 		1. User should be older than 16 and younger than 60 years old;
+		
 		2. Only those with role ‘supervisor’ or ‘admin’ can create users;
+		
 		3. User can be created only with one role from the list: ‘admin’ or ‘user’
+		
 		4. ‘login’ field is unique for each user;
+		
 		5. ‘screenName’ field is unique for each user;
+		
 		6. ‘password’ must contain latin letters and numbers (min 7 max 15 characters);
+		
 		7. User`s ‘gender’ can only be: ‘male’ or ‘female’;
 		
 		
@@ -46,11 +55,14 @@ Required fields:
 				password
 				screenName
 				
+Role model:
 
-	Role model:
-		supervisor:
+supervisor:
+
 				- can perform any operations in the system except for deleting users with the supervisor role
-		admin:
+admin:
+
 				- can perform any operations with users with the user and admin roles (if it is himself for admin role)
-		user:
+user:
+
 				- can perform any operation on its user except delete
