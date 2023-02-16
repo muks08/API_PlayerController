@@ -2,9 +2,12 @@ PlayerController
 
 Description:
 		1. This application is about creating users and operations with them;
+		
 		2. In the system already created 2 uses with roles: ‘supervisor’ (this user cannot be
 		deleted, only he can edit the user) and ‘admin’;
+		
 		3. Swagger is on the link {baseUrl}/swagger-ui.html
+		
 		
 Basic application requirements:
 		1. User should be older than 16 and younger than 60 years old;
@@ -15,7 +18,9 @@ Basic application requirements:
 		6. ‘password’ must contain latin letters and numbers (min 7 max 15 characters);
 		7. User`s ‘gender’ can only be: ‘male’ or ‘female’;
 		
+		
 Required fields:
+
 		/player/create/{editor}
 				editor - the ‘login’ of the user who calls the method
 				age
@@ -28,7 +33,7 @@ Required fields:
 		/player/delete/{editor}
 				editor - the ‘login’ of the user who calls the method
 				playerId
-				/player/get
+		/player/get
 				playerId
 				
 		/player/update/{editor}/{id}
@@ -41,6 +46,7 @@ Required fields:
 				password
 				screenName
 				
+
 	Role model:
 		supervisor:
 				- can perform any operations in the system except for deleting users with the supervisor role
