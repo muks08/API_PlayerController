@@ -8,8 +8,7 @@ Description:
 		2. In the system already created 2 uses with roles: ‘supervisor’ (this user cannot be
 		deleted, only he can edit the user) and ‘admin’;
 		
-		3. Swagger is on the link {baseUrl}/swagger-ui.html
-		
+		3. Swagger is on the link http://3.68.165.45/swagger-ui.html
 		
 Basic application requirements:
 
@@ -26,7 +25,6 @@ Basic application requirements:
 		6. ‘password’ must contain latin letters and numbers (min 7 max 15 characters);
 		
 		7. User`s ‘gender’ can only be: ‘male’ or ‘female’;
-		
 		
 Required fields:
 
