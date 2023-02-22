@@ -1,18 +1,17 @@
 package test;
 
-import specification.*;
-import gson.*;
-import io.restassured.response.Response;
-import pojo.*;
+import resourses.*;
+import resourses.pojo.*;
 import org.testng.annotations.Test;
+import io.restassured.response.Response;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import static org.testng.Assert.*;
 import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
-import static org.testng.Assert.*;
 
 public class ApiTests {
 	Logger logger = Logger.getLogger(ApiTests.class.getName());
@@ -36,13 +35,13 @@ public class ApiTests {
 				.get(createNewPlayer+"?age="+age+"&gender="+gender+"&login="+login+"&password="+password+
 						"&role="+role+"&screenName="+screenName)
 				.then().extract().response().asString();
-		PlayerItem player = JsonMaker.deserialize(response);
+		PlayerItem player = JsonMaker.deserialize(response, PlayerItem.class);
 		logger.info("\n"+"Created a new player by preCondition method with: player ID: " + player.getId() +
 				 " and login: " + player.getLogin()+"\n");
 		return player.getId();
 	}
 
-	public static void postConditionDeletePlayer(Integer id) {
+	public void postConditionDeletePlayer(Integer id) {
 		PlayerId playerId = new PlayerId(id);
 		String jsonRequest = JsonMaker.serialize(playerId);
 
@@ -52,6 +51,7 @@ public class ApiTests {
 				.when()
 				.delete(deletePlayer)
 				.then().extract().response().asString();
+		logger.info("\n"+"Delete player by postCondition method with player ID " + id +"\n");
 	}
 
 	@Test(description = "Get player with valid ID using POST method")
@@ -61,19 +61,19 @@ public class ApiTests {
 		PlayerId playerId = new PlayerId(testPlayerId);
 		String jsonRequest = JsonMaker.serialize(playerId);
 
-		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec200());
 		logger.info("\n"+"Check expected status code - 200" +"\n");
+		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec200());
 		String response = given()
 				.body(jsonRequest)
 				.when()
 				.post(getPlayer)
 				.then().extract().response().asString();
-		PlayerItem player = JsonMaker.deserialize(response);
+		PlayerItem player = JsonMaker.deserialize(response, PlayerItem.class);
 
-		assertEquals(testPlayerId, player.getId());
 		logger.info("\n"+"Check created player with ID " + testPlayerId + " with actual player ID " + player.getId()+"\n");
+		assertEquals(testPlayerId, player.getId());
+
 		postConditionDeletePlayer(player.getId());
-		logger.info("\n"+"Delete player by postCondition method with player ID " + testPlayerId +"\n");
 	}
 
 	@Test(description = "Get player with invalid ID using POST method")
@@ -81,39 +81,39 @@ public class ApiTests {
 		Integer testPlayerId = 777777777;
 		PlayerId playerId = new PlayerId(testPlayerId);
 		String jsonRequest = JsonMaker.serialize(playerId);
-
-		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec200());
 		logger.info("\n"+"Check expected status code - 200"+"\n");
+		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec200());
 		String response = given()
 				.body(jsonRequest)
 				.when()
 				.post(getPlayer)
 				.then().extract().response().asString();
-		assertTrue(response.isEmpty());
 		logger.info("\n"+"Check that response is empty: " + response +"\n");
+		assertTrue(response.isEmpty());
 	}
 
 	@Test(description = "Check all players item for basic requirements using GET method")
 	public void checkAllPlayersItem() {
 		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec200());
 		logger.info("\n"+"Check expected status code - 200"+"\n");
-		Response response = get(getAllPlayers);
 
-		List<PlayerItem> players = response.jsonPath().getList("players", PlayerItem.class);
+		List<PlayerItem> players = get(getAllPlayers)
+				.jsonPath().getList("players", PlayerItem.class);
+
 		List<String> screenNames = new ArrayList<>();
 		for (PlayerItem player : players) {
 			screenNames.add(player.getScreenName());
-			assertNotNull(player.getId());
 			logger.info("\n"+"Check that player ID is not null. Actual ID: " + player.getId()+"\n");
-			assertTrue(player.getAge() > 16 && player.getAge() < 60);
+			assertNotNull(player.getId());
 			logger.info("\n"+"Check that player should be older than 16 and younger than 60 years old. Actual age: "
 					+ player.getAge()+"\n");
-			assertTrue(player.getGender().contains("female") || player.getGender().contains("male"));
+			assertTrue(player.getAge() > 16 && player.getAge() < 60);
 			logger.info("\n"+"Check that player`s gender can only be male or female. Actual gender: " + player.getGender()+"\n");
+			assertTrue(player.getGender().contains("female") || player.getGender().contains("male"));
 		}
-		assertEquals(players.size(), screenNames.stream().distinct().count());
 		logger.info("\n"+"Check that screenName field is unique for each player"+"\n"+"Total unique screenNames: "
 				+ screenNames.stream().distinct().count()+"\n");
+		assertEquals(players.size(), screenNames.stream().distinct().count());
 	}
 
 	@Test(description = "Create player with basic requirements using GET method with parameters")
@@ -124,22 +124,21 @@ public class ApiTests {
 		String role = "user";
 		String screenName = "TestLogin666";
 
-		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec200());
 		logger.info("\n"+"Check expected status code - 200"+"\n");
+		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec200());
 		String response = given()
 				.when()
 				.get(createNewPlayer+"?age="+age+"&gender="+gender+"&login="+login+
 						"&role="+role+"&screenName="+screenName)
 				.then().extract().response().asString();
-		PlayerItem player = JsonMaker.deserialize(response);
+		PlayerItem player = JsonMaker.deserialize(response, PlayerItem.class);
 
-		assertEquals(player.getLogin(), login);
 		logger.info("\n"+"Check that new player login " + login + " the same as expected " + player.getLogin()+"\n");
-		assertNotNull(player.getId());
+		assertEquals(player.getLogin(), login);
 		logger.info("\n"+"Check that player ID not null. Actual ID " + player.getId()+"\n");
+		assertNotNull(player.getId());
 
 		postConditionDeletePlayer(player.getId());
-		logger.info("\n"+"Delete player by postCondition method with player ID " + player.getId()+"\n");
 	}
 
 	@Test(description = "Create a player without compliance of requirements using GET method with parameters")
@@ -151,8 +150,8 @@ public class ApiTests {
 		String role = "user";
 		String screenName = "TestPlayer777";
 
-		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec400());
 		logger.info("\n"+"Check expected status code - 400"+"\n");
+		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec400());
 		Response response = get(createNewPlayer+"?age="+age+"&gender="+gender+"&login="+login+
 				"&password="+password+"&role="+role+"&screenName="+screenName);
 	}
@@ -163,9 +162,9 @@ public class ApiTests {
 		PlayerId playerId = new PlayerId(testPlayerId);
 		String jsonRequest = JsonMaker.serialize(playerId);
 
-		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec204());
 		logger.info("\n"+"Delete player with ID " + testPlayerId+"\n");
 		logger.info("\n"+"Check expected status code - 204"+"\n");
+		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec204());
 		String response = given()
 				.body(jsonRequest)
 				.when()
@@ -177,10 +176,11 @@ public class ApiTests {
 	public void deletePlayerByInvalidId() {
 		Integer testPlayerId = 777;
 		PlayerId playerId = new PlayerId(testPlayerId);
-		String jsonRequest = JsonMaker.serialize(playerId);
 		logger.info("\n"+"Delete player with invalid ID " + testPlayerId+"\n");
-		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec403());
+		String jsonRequest = JsonMaker.serialize(playerId);
+
 		logger.info("\n"+"Check expected status code - 403"+"\n");
+		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec403());
 		String response = given()
 				.body(jsonRequest)
 				.when()
@@ -200,26 +200,25 @@ public class ApiTests {
 		PlayerItem player = new PlayerItem(login, password, screenName, gender, age, role);
 		String jsonRequest = JsonMaker.serialize(player);
 
-		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec200());
 		logger.info("\n"+"Check expected status code - 200"+"\n");
+		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec200());
 		String response = given()
 				.body(jsonRequest)
 				.when()
 				.patch(updatePlayer+testPlayerId)
 				.then().extract().response().asString();
-		PlayerItem playerResponse = JsonMaker.deserialize(response);
+		PlayerItem playerResponse = JsonMaker.deserialize(response, PlayerItem.class);
 
-		assertEquals(age, playerResponse.getAge());
 		logger.info("\n"+"Check that age was updated: " + playerResponse.getAge()+"\n");
-		assertEquals(gender, playerResponse.getGender());
+		assertEquals(age, playerResponse.getAge());
 		logger.info("\n"+"Check that gender was updated: " + playerResponse.getGender()+"\n");
-		assertEquals(login, playerResponse.getLogin());
+		assertEquals(gender, playerResponse.getGender());
 		logger.info("\n"+"Check that login was updated: " + playerResponse.getLogin()+"\n");
-		assertEquals(screenName, playerResponse.getScreenName());
+		assertEquals(login, playerResponse.getLogin());
 		logger.info("\n"+"Check that screenName was updated: " + playerResponse.getScreenName()+"\n");
+		assertEquals(screenName, playerResponse.getScreenName());
 
 		postConditionDeletePlayer(testPlayerId);
-		logger.info("\n"+"Delete player by postCondition method with player ID " + testPlayerId +"\n");
 	}
 
 	@Test(description = "Update player with invalid ID using PATCH method")
@@ -232,8 +231,8 @@ public class ApiTests {
 		String role = "user";
 		String screenName = "TestPlayer777";
 
-		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec200());
 		logger.info("\n"+"Check expected status code - 200"+"\n");
+		Specification.installSpec(Specification.requestSpec(URL), Specification.responseSpec200());
 		PlayerItem player = new PlayerItem(login, password, screenName, gender, age, role);
 		String jsonRequest = JsonMaker.serialize(player);
 		String response = given()
@@ -242,7 +241,7 @@ public class ApiTests {
 				.patch(updatePlayer+testPlayerId)
 				.then().extract().response().asString();
 
-		assertTrue(response.isEmpty());
 		logger.info("\n"+"Check that response is empty: " + response+"\n");
+		assertTrue(response.isEmpty());
 	}
 }

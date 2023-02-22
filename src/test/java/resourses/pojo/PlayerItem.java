@@ -1,4 +1,4 @@
-package pojo;
+package resourses.pojo;
 
 public class PlayerItem {
 	private Integer id;
